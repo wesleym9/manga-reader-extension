@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Manga Reader Assistant",
   "version": "0.2.1",
-  "description": "OCR + selectable Japanese text overlay for manga on the web. Uses Claude / GPT-4o / Gemini for OCR. Pairs with Yomitan.",
+  "description": "OCR + selectable Japanese text overlay for manga on the web. Uses Claude / GPT-4o / Gemini for OCR and translation.",
   "permissions": [
     "activeTab",
     "scripting",

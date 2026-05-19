@@ -3,7 +3,6 @@
 //   1. Toggle a "selection mode" where the user drags a rectangle over a manga bubble
 //   2. Send the selected region (image crop) to the background for OCR
 //   3. Render the OCR result as a selectable-text overlay positioned over the original bubble
-//      (so Yomitan can hover-look-up the words natively)
 
 (() => {
   // Guard against double-injection on SPAs
@@ -338,8 +337,8 @@
   }
 
   // ---------- Overlay rendering ----------
-  // The overlay is a fixed-position div containing the OCR'd text as REAL DOM text.
-  // Yomitan and other dictionary extensions will pick it up natively on hover.
+  // The overlay is a positioned div containing the OCR'd text as real DOM text nodes.
+  // Browser dictionary extensions can pick it up natively on hover.
 
   function renderOverlay(rect, text, { loading = false, error = false } = {}) {
     const el = document.createElement('div');

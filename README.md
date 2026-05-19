@@ -1,8 +1,8 @@
 # Manga Reader Assistant
 
-A Chrome extension that OCRs Japanese manga text on web pages, renders selectable DOM text
-so dictionary extensions like **Yomitan** can do hover lookups, and displays a session log
-with furigana readings, original kanji, and English translations.
+A Chrome extension that OCRs Japanese manga text on web pages, renders it as selectable
+DOM text, and displays a session log with furigana readings, original kanji, and English
+translations.
 
 OCR and translation are handled by a vision LLM of your choice — **Claude**, **GPT-4o**, or
 **Gemini** — so there's no model to download and no server to run. Bring your own API key
@@ -16,7 +16,7 @@ OCR and translation are handled by a vision LLM of your choice — **Claude**, *
 4. The recognized Japanese text appears as a selectable overlay positioned on the bubble.
 5. A **Session Log** panel opens automatically showing the hiragana reading, original kanji,
    and English translation for every bubble you've scanned.
-6. Hover the overlay text with Yomitan to look up words and make Anki cards.
+6. The overlays are selectable DOM text — compatible with browser dictionary extensions.
 
 ## Setup
 
@@ -44,12 +44,10 @@ Where to get keys:
 Keys live in `chrome.storage.local` and are sent only to the provider you chose. Nothing
 is proxied through any third party.
 
-### 3. (Recommended) Install Yomitan
+### 3. (Optional) Install a browser dictionary extension
 
-Get it from the
-[Chrome Web Store](https://chromewebstore.google.com/detail/yomitan/likgccmbimhjbgkjambclfkhldnlhbnn).
-Import a dictionary (JMdict is the standard). Yomitan picks up the OCR'd text in the
-overlays automatically — they don't need to know about each other.
+The OCR overlays render as real DOM text nodes, so any hover-lookup dictionary extension
+will work with them automatically without any special integration.
 
 ## Usage
 
@@ -214,7 +212,7 @@ the full-page scan and context features are unavailable.
 
 Key design choices:
 
-- **Selectable DOM text** instead of canvas overlays, so Yomitan works out-of-the-box.
+- **Selectable DOM text** instead of canvas overlays, so browser dictionary extensions work without any special integration.
 - **captureVisibleTab** for image data, which sidesteps cross-origin restrictions on the
   manga site's `<img>` elements.
 - **JSON response format** — providers return `{"text":"…","reading":"…","translation":"…"}`

@@ -42,7 +42,7 @@ html.mra-selecting * {
   padding: 8px 28px 8px 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
-  /* Selectable text — critical for Yomitan to pick it up */
+  /* Selectable text — makes the overlay compatible with browser dictionary extensions */
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
