@@ -18,20 +18,19 @@ const OCR_INSTRUCTION =
   'Use \\n within string values to separate multiple speech bubbles.\n' +
   'If there is no Japanese text, return: {"text":"","reading":"","translation":""}';
 
-// Full-page instruction: asks the LLM to output bubble center positions so we can
-// sort algorithmically and place ghost highlight overlays on the page.
+// Full-page instruction: asks the LLM to number bubbles in reading order.
+// Numbering is more reliable than coordinate estimation because the LLM understands
+// manga reading order conceptually but is poor at pixel-accurate position estimates.
 const FULL_PAGE_INSTRUCTION =
   'You are a manga OCR and translation tool. Analyze this manga page image.\n\n' +
-  'For EACH speech bubble, thought bubble, and narration box:\n' +
-  '1. Estimate the bubble center position as percentages of the image dimensions.\n' +
-  '   x=0 is the left edge, x=100 the right. y=0 is the top, y=100 the bottom.\n' +
-  '2. Extract ALL Japanese text in that bubble exactly as written.\n' +
-  '3. Write the complete hiragana reading (convert every kanji to hiragana; leave kana unchanged).\n' +
-  '4. Translate to natural English.\n\n' +
-  'Output ONE entry per bubble, bubbles separated by ---.\n' +
-  'Each entry: a POSITION line followed by a JSON object. No markdown, no code fences:\n' +
-  'POSITION: x=<number>,y=<number>\n' +
-  '{"text":"<japanese>","reading":"<hiragana>","translation":"<english>"}\n' +
+  'Manga reading order: RIGHT column first (top to bottom), then LEFT column (top to bottom). ' +
+  'Within each panel, read RIGHT to LEFT, TOP to BOTTOM.\n\n' +
+  'First, identify ALL speech bubbles, thought bubbles, and narration boxes and number them ' +
+  '1, 2, 3... in the manga reading order described above.\n\n' +
+  'Then output ONE entry per bubble in that numbered order, separated by ---.\n' +
+  'Each entry: an ORDER line then a JSON object. No markdown, no code fences:\n' +
+  'ORDER: <number>\n' +
+  '{"text":"<all japanese text>","reading":"<full hiragana reading>","translation":"<english>"}\n' +
   '---\n\n' +
   'If there is no Japanese text, return an empty string.';
 
@@ -52,16 +51,15 @@ function buildInstruction(priorBubbles, useContext, instructionOverride) {
 
 // ---------- Response parsing ----------
 
-// Parses one bubble chunk into { text, readingText, translation, x, y }.
-// Strips an optional POSITION header (full-page scan) then JSON-parses the body.
+// Parses one bubble chunk into { text, readingText, translation, order }.
+// Strips an optional ORDER header (full-page scan) then JSON-parses the body.
 // Falls back gracefully if the LLM produces invalid JSON.
 function parseAnnotated(raw) {
-  let x, y, content = raw;
-  const posMatch = raw.match(/^POSITION:\s*x=(\d+(?:\.\d+)?),\s*y=(\d+(?:\.\d+)?)\s*\n/i);
-  if (posMatch) {
-    x = parseFloat(posMatch[1]);
-    y = parseFloat(posMatch[2]);
-    content = raw.slice(posMatch[0].length);
+  let order, content = raw;
+  const orderMatch = raw.match(/^ORDER:\s*(\d+)\s*\n/i);
+  if (orderMatch) {
+    order = parseInt(orderMatch[1], 10);
+    content = raw.slice(orderMatch[0].length);
   }
 
   // Strip markdown code fences the LLM sometimes adds despite instructions.
@@ -73,53 +71,21 @@ function parseAnnotated(raw) {
       text:        (p.text        || '').trim(),
       readingText: (p.reading     || '').trim(),
       translation: (p.translation || '').trim(),
-      x, y,
+      order,
     };
   } catch {
-    return { text: content, readingText: content, translation: '', x, y };
+    return { text: content, readingText: content, translation: '', order };
   }
 }
 
-// Sorts bubbles into manga reading order: rightmost column first, top-to-bottom
-// within each column, then next column to the left, and so on.
-// Bubbles whose x coordinates fall within COLUMN_THRESHOLD of each other are
-// treated as belonging to the same column.
+// Sorts bubbles by the ORDER number the LLM assigned.
+// Bubbles without an order number (e.g. from single-bubble OCR) are appended last.
 function sortByMangaOrder(bubbles) {
-  const positioned   = bubbles.filter((b) => b.x !== undefined && b.y !== undefined);
-  const unpositioned = bubbles.filter((b) => b.x === undefined || b.y === undefined);
-  if (!positioned.length) return bubbles;
-
-  // Bubbles within 30% horizontally share a column; within 10% vertically share a row.
-  const COLUMN_THRESHOLD = 30;
-  const ROW_THRESHOLD    = 10;
-
-  // Build columns by grouping bubbles that share a similar x position.
-  const columns = [];
-  for (const bubble of positioned) {
-    const col = columns.find((c) => Math.abs(c.x - bubble.x) <= COLUMN_THRESHOLD);
-    if (col) {
-      col.bubbles.push(bubble);
-      col.x = col.bubbles.reduce((s, b) => s + b.x, 0) / col.bubbles.length;
-    } else {
-      columns.push({ x: bubble.x, bubbles: [bubble] });
-    }
-  }
-
-  // Sort columns right-to-left.
-  columns.sort((a, b) => b.x - a.x);
-
-  const sorted = [];
-  for (const col of columns) {
-    col.bubbles.sort((a, b) => {
-      // Bubbles at nearly the same vertical position are on the same row.
-      // Break the tie with x — rightmost first, matching manga reading direction.
-      if (Math.abs(a.y - b.y) <= ROW_THRESHOLD) return b.x - a.x;
-      return a.y - b.y;
-    });
-    sorted.push(...col.bubbles);
-  }
-
-  return [...sorted, ...unpositioned];
+  const numbered   = bubbles.filter((b) => b.order !== undefined);
+  const unnumbered = bubbles.filter((b) => b.order === undefined);
+  if (!numbered.length) return bubbles;
+  numbered.sort((a, b) => a.order - b.order);
+  return [...numbered, ...unnumbered];
 }
 
 // ---------- Anthropic (Claude) ----------
