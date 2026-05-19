@@ -1,0 +1,15 @@
+# Normalize all text files to LF. Prevents CRLF churn on Windows checkouts
+# and keeps diffs clean across collaborators.
+* text=auto eol=lf
+
+# Explicit overrides for clarity
+*.js   text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.css  text eol=lf
+*.md   text eol=lf
+*.py   text eol=lf
+
+# Binary
+*.png  binary
+*.zip  binary

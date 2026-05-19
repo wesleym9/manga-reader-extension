@@ -1,0 +1,33 @@
+# Python (local OCR backend venv)
+backend/.venv/
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Node (not used yet, but in case you add tooling later)
+node_modules/
+package-lock.json
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build / packaging artifacts
+*.zip
+dist/
+build/
+
+# Local secrets (in case you ever stash a key in a dotfile)
+.env
+.env.local
+*.key

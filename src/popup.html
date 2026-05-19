@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Manga Reader Assistant</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Manga Reader</h1>
+      <p class="subtitle">Click a bubble → get selectable text</p>
+    </header>
+
+    <button id="toggle" class="primary">Start selection (Alt+M)</button>
+    <button id="clear" class="secondary">Clear overlays</button>
+
+    <section class="settings">
+      <h2>OCR provider</h2>
+
+      <label for="provider">Provider</label>
+      <select id="provider">
+        <option value="anthropic">Claude (Anthropic)</option>
+        <option value="openai">GPT-4o (OpenAI)</option>
+        <option value="google">Gemini (Google)</option>
+        <option value="local">Local manga-ocr server</option>
+      </select>
+
+      <label for="model">Model</label>
+      <select id="model"></select>
+
+      <div id="key-row" class="key-row">
+        <label id="key-label" for="api-key">API key</label>
+        <input id="api-key" type="password" placeholder="sk-..." autocomplete="off" />
+      </div>
+
+      <div id="local-row" class="local-row" hidden>
+        <label for="local-url">Local server URL</label>
+        <input id="local-url" type="url" placeholder="http://localhost:7331/ocr" />
+      </div>
+
+      <button id="save" class="tertiary">Save</button>
+      <p class="hint" id="hint">
+        Keys are stored locally in <code>chrome.storage</code> and only sent to
+        the provider you select.
+      </p>
+    </section>
+
+    <footer>
+      <p>Pair with <strong>Yomitan</strong> for hover lookups.</p>
+    </footer>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+* { box-sizing: border-box; }
+
+body {
+  width: 300px;
+  margin: 0;
+  padding: 16px;
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #fafaf7;
+  color: #1a1a1a;
+}
+
+header { margin-bottom: 14px; }
+h1 {
+  margin: 0 0 2px;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+.subtitle { margin: 0; font-size: 11px; color: #666; }
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #888;
+  font-weight: 600;
+}
+
+button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+button:hover { background: #f0f0ea; }
+
+button.primary {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+  font-weight: 500;
+}
+button.primary:hover { background: #333; }
+
+button.secondary { background: #fff; }
+button.tertiary {
+  width: auto;
+  display: inline-block;
+  padding: 5px 14px;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.settings {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e8e8e0;
+}
+
+label {
+  display: block;
+  font-size: 11px;
+  color: #555;
+  margin: 8px 0 3px;
+}
+
+select, input[type="url"], input[type="password"], input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 12px;
+  background: #fff;
+}
+
+.hint {
+  font-size: 11px;
+  color: #666;
+  margin: 8px 0 0;
+}
+.hint code {
+  background: #eee;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+footer {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid #e8e8e0;
+  font-size: 11px;
+  color: #666;
+}
+footer p { margin: 0; }
+
+.save-flash {
+  background: #1a8a3d !important;
+  color: #fff !important;
+  border-color: #1a8a3d !important;
+}
