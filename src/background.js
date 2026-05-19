@@ -4,17 +4,19 @@
 // OCR provider the user picked in the popup (Anthropic, OpenAI, Google, or
 // the local manga-ocr server).
 
-import { runOcr } from './providers.js';
+import { runOcr, runFullPageOcr } from './providers.js';
 
 // Keyboard shortcut → forward to active tab
 chrome.commands.onCommand.addListener(async (command) => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+
   if (command === 'toggle-select-mode') {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.id) {
-      chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_SELECTION' }).catch(() => {
-        // Content script not loaded on this page — silently ignore.
-      });
-    }
+    chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_SELECTION' }).catch(() => {});
+  } else if (command === 'clear-overlays') {
+    chrome.tabs.sendMessage(tab.id, { type: 'CLEAR_OVERLAYS' }).catch(() => {});
+  } else if (command === 'full-page-select') {
+    chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_FULLPAGE_SELECTION' }).catch(() => {});
   }
 });
 
@@ -23,11 +25,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     handleOcrRegion(msg, sender)
       .then(sendResponse)
       .catch((err) => sendResponse({ ok: false, error: err.message || String(err) }));
-    return true; // async response
+    return true;
+  }
+  if (msg.type === 'FULL_PAGE_REGION') {
+    handleFullPageRegion(msg, sender)
+      .then(sendResponse)
+      .catch((err) => sendResponse({ ok: false, error: err.message || String(err) }));
+    return true;
   }
 });
 
-async function handleOcrRegion({ rect, dpr }, sender) {
+async function handleOcrRegion({ rect, dpr, priorBubbles = [] }, sender) {
   if (!sender.tab?.windowId) throw new Error('No window context');
 
   // 1. Screenshot the viewport.
@@ -40,13 +48,22 @@ async function handleOcrRegion({ rect, dpr }, sender) {
 
   // 3. Load provider settings and dispatch.
   const settings = await getSettings();
-  let text;
+  let text, readingText, translation;
   try {
-    text = await runOcr(cropped, settings);
+    ({ text, readingText, translation } = await runOcr(cropped, settings, priorBubbles));
   } catch (err) {
     throw new Error(`OCR failed (${settings.provider}): ${err.message}`);
   }
-  return { ok: true, text };
+  return { ok: true, text, readingText, translation };
+}
+
+async function handleFullPageRegion({ rect, dpr }, sender) {
+  if (!sender.tab?.windowId) throw new Error('No window context');
+  const dataUrl = await chrome.tabs.captureVisibleTab(sender.tab.windowId, { format: 'png' });
+  const cropped = await cropImage(dataUrl, rect, dpr);
+  const settings = await getSettings();
+  const bubbles = await runFullPageOcr(cropped, settings);
+  return { ok: true, bubbles };
 }
 
 // ---------- Settings ----------
@@ -59,6 +76,7 @@ async function getSettings() {
     'apiKeyOpenAI',
     'apiKeyGoogle',
     'localUrl',
+    'useContext',
   ]);
   const provider = s.provider || 'anthropic';
   const defaultModelByProvider = {
@@ -75,6 +93,7 @@ async function getSettings() {
       provider === 'openai'    ? s.apiKeyOpenAI    :
       provider === 'google'    ? s.apiKeyGoogle    : '',
     localUrl: s.localUrl || 'http://localhost:7331/ocr',
+    useContext: !!s.useContext,
   };
 }
 

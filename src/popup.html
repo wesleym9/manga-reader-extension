@@ -12,7 +12,8 @@
     </header>
 
     <button id="toggle" class="primary">Start selection (Alt+M)</button>
-    <button id="clear" class="secondary">Clear overlays</button>
+    <button id="scan-page" class="secondary">Scan page area (Alt+F)</button>
+    <button id="clear" class="secondary">Clear overlays (Alt+C)</button>
 
     <section class="settings">
       <h2>OCR provider</h2>
@@ -43,6 +44,14 @@
         Keys are stored locally in <code>chrome.storage</code> and only sent to
         the provider you select.
       </p>
+
+      <div class="context-row">
+        <label class="context-label">
+          <input type="checkbox" id="use-context" />
+          <span>Use session log as context</span>
+        </label>
+        <p class="hint">Sends prior bubbles to the LLM for better coherence — pronouns, speaker names, reading order. Uses slightly more tokens per call. Not available for the local server.</p>
+      </div>
     </section>
 
     <footer>

@@ -37,6 +37,20 @@
         "mac": "Alt+M"
       },
       "description": "Toggle manga selection mode"
+    },
+    "clear-overlays": {
+      "suggested_key": {
+        "default": "Alt+C",
+        "mac": "Alt+C"
+      },
+      "description": "Clear all OCR overlays"
+    },
+    "full-page-select": {
+      "suggested_key": {
+        "default": "Alt+F",
+        "mac": "Alt+F"
+      },
+      "description": "Select an area for full-page bubble scan"
     }
   },
   "icons": {

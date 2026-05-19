@@ -50,6 +50,14 @@ $('toggle').addEventListener('click', async () => {
   window.close();
 });
 
+$('scan-page').addEventListener('click', async () => {
+  const tab = await getActiveTab();
+  if (!tab?.id) return;
+  await ensureContentScript(tab.id);
+  chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_FULLPAGE_SELECTION' }).catch(() => {});
+  window.close();
+});
+
 $('clear').addEventListener('click', async () => {
   const tab = await getActiveTab();
   if (!tab?.id) return;
@@ -73,6 +81,8 @@ function refreshProviderUI(provider) {
   const isLocal = provider === 'local';
   keyRowEl.hidden = isLocal;
   localRowEl.hidden = !isLocal;
+  $('use-context').disabled = isLocal;
+  $('scan-page').disabled = isLocal;
 
   const labels = {
     anthropic: 'Anthropic API key',
@@ -134,6 +144,7 @@ $('save').addEventListener('click', async () => {
     if (field) updates[field] = apiKeyEl.value.trim();
   }
 
+  if (!$('use-context').disabled) updates.useContext = $('use-context').checked;
   await chrome.storage.local.set(updates);
 
   const btn = $('save');
@@ -156,6 +167,7 @@ $('save').addEventListener('click', async () => {
     'apiKeyOpenAI',
     'apiKeyGoogle',
     'localUrl',
+    'useContext',
   ]);
   const provider = s.provider || 'anthropic';
   providerEl.value = provider;
@@ -165,4 +177,5 @@ $('save').addEventListener('click', async () => {
   const field = keyFieldName(provider);
   apiKeyEl.value = (field && s[field]) || '';
   localUrlEl.value = s.localUrl || '';
+  $('use-context').checked = !!s.useContext;
 })();
